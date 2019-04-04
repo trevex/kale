@@ -13,9 +13,32 @@ print(greeting + ", world")
 squares = [x*x for x in range(10)]
 
 bar = require("foo")
-baz = bar["sayHello"]()
+baz = bar.sayHello()
 print(baz)
 `
+
+type StarlarkModule struct {
+	starlark.Dict
+}
+
+func (m *StarlarkModule) Type() string { return "module" }
+func (m *StarlarkModule) Attr(name string) (starlark.Value, error) {
+	if v, found, _ := m.Get(starlark.String(name)); found {
+		return v, nil
+	} else {
+		v, err := m.Dict.Attr(name)
+		return v, err
+	}
+}
+func (m *StarlarkModule) AttrNames() []string {
+	names := m.Dict.AttrNames()
+	for _, v := range m.Keys() {
+		if str, ok := starlark.AsString(v); ok {
+			names = append(names, str)
+		}
+	}
+	return names
+}
 
 type StarlarkModuleFunc func(*starlark.Dict) (starlark.Value, error)
 type StarlarkModuleMap map[string]StarlarkModuleFunc
@@ -25,7 +48,7 @@ var modules StarlarkModuleMap
 func init() {
 	modules = make(StarlarkModuleMap)
 	modules["foo"] = func(params *starlark.Dict) (starlark.Value, error) {
-		foo := starlark.NewDict(1)
+		foo := &StarlarkModule{}
 		foo.SetKey(starlark.String("sayHello"), starlark.NewBuiltin("sayHello", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 			fmt.Println("Hello, go")
 			return starlark.String("Hello, starlark"), nil
