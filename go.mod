@@ -1,4 +1,4 @@
-module github.com/trevex/kompass
+module github.com/trevex/kale
 
 go 1.12
 
