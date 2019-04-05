@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/trevex/kale/pkg/builtin"
 	"github.com/trevex/kale/pkg/module"
 	"go.starlark.net/starlark"
 )
@@ -16,6 +17,11 @@ squares = [x*x for x in range(10)]
 bar = require("foo")
 baz = bar.sayHello()
 print(baz)
+
+def deploy(params):
+	print(params)
+
+target(deploy)
 `
 
 func main() {
@@ -36,7 +42,8 @@ func main() {
 	}
 	predeclared := starlark.StringDict{
 		"greeting": starlark.String("hello"),
-		"require":  mgr.RequireFn(),
+		"require":  builtin.Require(mgr),
+		"target":   builtin.Target,
 	}
 
 	// Run the script
