@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,9 +43,9 @@ func main() {
 	// Load file and execute it
 	err := eng.ExecFile(kalefile)
 	if err != nil {
-		log.Fatal(err) // TODO: using log? then configure it properly :|
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-	eng.PrintGlobalScope()
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
 		eng.REPL()
@@ -53,7 +53,7 @@ func main() {
 	}
 	// Run the command
 	if err := cmd.Execute(); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

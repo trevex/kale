@@ -18,12 +18,12 @@ type kubectlVersion struct {
 }
 
 type kubectlParams struct {
-	ExpectedVersion string
+	VersionConstraint string
 }
 
 func newKubectlParams() *kubectlParams {
 	return &kubectlParams{
-		ExpectedVersion: "v0.0.0",
+		VersionConstraint: "v0.0.0",
 	}
 }
 
@@ -53,7 +53,7 @@ func apply(params *kubectlParams) util.StarlarkFunction {
 			return nil, err
 		}
 		fmt.Printf("kubectl input %s\n", input)
-		return starlark.String(params.ExpectedVersion), nil
+		return starlark.String(params.VersionConstraint), nil
 	}
 }
 
@@ -61,13 +61,23 @@ var Builder = func(params *starlark.Dict) (starlark.Value, error) {
 	mod := &module.Module{}
 	parsed := newKubectlParams()
 	if v, ok, err := params.Get(starlark.String("version")); ok && err == nil {
-		fmt.Println(v.Type())
+		if versionConstraint, ok := starlark.AsString(v); ok {
+			parsed.VersionConstraint = versionConstraint
+		} else {
+			return nil, fmt.Errorf("'version'-field is %s, but expected to be string!", v.Type())
+		}
 	}
 	version, err := GetVersion()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(version)
+	ok, err := util.CheckVersionConstraint(parsed.VersionConstraint, version)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, fmt.Errorf("Kubectl version %s does not match constraint %s!", version, parsed.VersionConstraint)
+	}
 	mod.SetKeyFunc(starlark.String("apply"), apply(parsed))
 	return mod, nil
 }
