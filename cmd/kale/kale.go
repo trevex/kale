@@ -25,8 +25,10 @@ func main() {
 	flags.BoolVar(&global.DryRun, "dry-run", global.DryRun, "Whether to run target without introducing changes (default false)")
 	flags.StringVarP(&global.Namespace, "namespace", "n", global.Namespace, "Which namespace the target should operate in (default \"\")")
 	flags.StringVarP(&global.Release, "release", "r", global.Release, "How the artifacts of the target should be named (default \"\")")
-	var filepath string
-	flags.StringVarP(&filepath, "file", "f", "./kalefile", "Kale-compliant starlark file containing target definitions")
+	var kalefile string
+	flags.StringVarP(&kalefile, "file", "f", "./kalefile", "Kale-compliant starlark file containing target definitions")
+	var config string
+	flags.StringVarP(&config, "config", "c", "", "YAML-file containing target-parameters (default \"\")")
 	// Parse flags once beforehand to make them available via global variables
 	cmd.ParseFlags(os.Args)
 	// Setup modules
@@ -47,7 +49,7 @@ func main() {
 		"target":   builtin.Target(cmd),
 	})
 	// Load file and execute it
-	err := eng.ExecFile(filepath)
+	err := eng.ExecFile(kalefile)
 	if err != nil {
 		log.Fatal(err)
 	}
