@@ -21,10 +21,9 @@ func Target(rootCmd *cobra.Command) starlark.Value {
 			Short: "TODO",
 			Long:  `TODO`,
 			RunE: func(_ *cobra.Command, args []string) error {
-				fmt.Println(targetName)
-				targetArgs := starlark.Tuple{}
 				targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), starlark.String("hello, params")}}
-				_, err := starlark.Call(thread, targetImpl, targetArgs, targetKwargs)
+				// TODO: proper params
+				_, err := starlark.Call(thread, targetImpl, starlark.Tuple{}, targetKwargs)
 				return err
 			},
 		}
@@ -32,8 +31,9 @@ func Target(rootCmd *cobra.Command) starlark.Value {
 		// Setup flags
 		flags := cmd.Flags()
 		test := false
+		// TODO: proper flags
 		flags.BoolVar(&test, "test", false, "foo")
-		// TODO: do something
+		// TODO: check config?
 		return starlark.None, nil
 
 	})
