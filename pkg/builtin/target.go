@@ -8,11 +8,9 @@ import (
 )
 
 func Target(rootCmd *cobra.Command) starlark.Value {
-	return starlark.NewBuiltin("target", func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var (
-			targetImpl   starlark.Callable
-			paramsSchema starlark.Dict
-		)
+	return starlark.NewBuiltin("target", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		targetImpl := &starlark.Function{}
+		paramsSchema := starlark.NewDict(16)
 		if err := starlark.UnpackArgs("target", args, kwargs, "func", &targetImpl, "params?", &paramsSchema); err != nil {
 			return nil, err
 		}
@@ -23,8 +21,11 @@ func Target(rootCmd *cobra.Command) starlark.Value {
 			Short: "TODO",
 			Long:  `TODO`,
 			RunE: func(_ *cobra.Command, args []string) error {
-				fmt.Println("TEST")
-				return nil
+				fmt.Println(targetName)
+				targetArgs := starlark.Tuple{}
+				targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), starlark.String("hello, params")}}
+				_, err := starlark.Call(thread, targetImpl, targetArgs, targetKwargs)
+				return err
 			},
 		}
 		rootCmd.AddCommand(cmd)
