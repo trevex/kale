@@ -13,8 +13,8 @@ import (
 
 type kubectlVersion struct {
 	ClientVersion struct {
-		GitVersion string
-	}
+		GitVersion string `yaml:"gitVersion"`
+	} `yaml:"clientVersion"`
 }
 
 type kubectlParams struct {
@@ -63,6 +63,11 @@ var Builder = func(params *starlark.Dict) (starlark.Value, error) {
 	if v, ok, err := params.Get(starlark.String("version")); ok && err == nil {
 		fmt.Println(v.Type())
 	}
+	version, err := GetVersion()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(version)
 	mod.SetKeyFunc(starlark.String("apply"), apply(parsed))
 	return mod, nil
 }
