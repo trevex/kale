@@ -1,12 +1,8 @@
-print(greeting + ", world")
-
-squares = [x*x for x in range(10)]
-
-bar = require("foo")
-baz = bar.sayHello()
-print(baz)
+kubectl = require("kubectl", { "version": ">=v1.10.0" })
 
 def deploy(params):
-	print(params)
+    print(params)
+    kubectl.apply("test")
+    print("last")
 
 target(deploy)

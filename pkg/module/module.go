@@ -1,6 +1,7 @@
 package module
 
 import (
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -28,6 +29,6 @@ func (m *Module) AttrNames() []string {
 	return names
 }
 
-func (m *Module) SetKeyFunc(name starlark.String, fn func(*starlark.Thread, *starlark.Builtin, starlark.Tuple, []starlark.Tuple) (starlark.Value, error)) error {
+func (m *Module) SetKeyFunc(name starlark.String, fn util.StarlarkFunction) error {
 	return m.SetKey(name, starlark.NewBuiltin(string(name), fn))
 }

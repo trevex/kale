@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/trevex/kale/pkg/builtin"
 	"github.com/trevex/kale/pkg/engine"
 	"github.com/trevex/kale/pkg/global"
+	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
 	"go.starlark.net/starlark"
 )
@@ -33,25 +33,17 @@ func main() {
 	cmd.ParseFlags(os.Args)
 	// Setup modules
 	mgr := module.NewManager()
-	mgr.Set("foo", func(params *starlark.Dict) (starlark.Value, error) {
-		foo := &module.Module{}
-		foo.SetKeyFunc(starlark.String("sayHello"), func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-			fmt.Println("Hello, go")
-			return starlark.String("Hello, starlark"), nil
-		})
-		return foo, nil
-	})
+	mgr.Set("kubectl", kubectl.Builder)
 	// Create starlark engine
 	eng := engine.New()
 	eng.Declare(starlark.StringDict{
-		"greeting": starlark.String("hello"),
-		"require":  builtin.Require(mgr),
-		"target":   builtin.Target(cmd),
+		"require": builtin.Require(mgr),
+		"target":  builtin.Target(cmd),
 	})
 	// Load file and execute it
 	err := eng.ExecFile(kalefile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err) // TODO: using log? then configure it properly :|
 	}
 	eng.PrintGlobalScope()
 	// Start REPL if no target was supplied

@@ -6,9 +6,9 @@ import (
 	"go.starlark.net/starlark"
 )
 
-type ModuleBuilderFn func(*starlark.Dict) (starlark.Value, error)
+type ModuleBuilderFunction func(*starlark.Dict) (starlark.Value, error)
 
-type moduleMap map[string]ModuleBuilderFn
+type moduleMap map[string]ModuleBuilderFunction
 
 type Manager struct {
 	modules moduleMap
@@ -20,7 +20,7 @@ func NewManager() *Manager {
 	}
 }
 
-func (m *Manager) Set(name string, builder ModuleBuilderFn) error {
+func (m *Manager) Set(name string, builder ModuleBuilderFunction) error {
 	if builder == nil {
 		return fmt.Errorf("Nil-pointer provided as builder function for '%s'!", name)
 	}
@@ -28,7 +28,7 @@ func (m *Manager) Set(name string, builder ModuleBuilderFn) error {
 	return nil
 }
 
-func (m *Manager) Get(name string) (ModuleBuilderFn, bool) {
+func (m *Manager) Get(name string) (ModuleBuilderFunction, bool) {
 	builder, ok := m.modules[name]
 	return builder, ok
 }
