@@ -32,3 +32,4 @@ target(deploy, params = {
 # good examples:
 # * grafana with custom dashboards (via `rsync` into volume?)
 # * scaling down etcd or cockroachdb
+# * during cleanup (e.g. etcd-operator), checking whether another deployment still uses crds, if not clean them up
