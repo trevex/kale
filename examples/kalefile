@@ -15,7 +15,7 @@ dependency(
 
 def deploy(params):
     manifests = helm.template(chart, global.namespace, params.values)
-    kubectl.apply(dry_run=true, manifests)
+    kubectl.apply(manifests, dry_run=true)
 
 target(deploy, params = {
     'values': schema.Filename(required = true)
