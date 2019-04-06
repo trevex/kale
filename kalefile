@@ -1,0 +1,12 @@
+print(greeting + ", world")
+
+squares = [x*x for x in range(10)]
+
+bar = require("foo")
+baz = bar.sayHello()
+print(baz)
+
+def deploy(params):
+	print(params)
+
+target(deploy)

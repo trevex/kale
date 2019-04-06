@@ -2,26 +2,12 @@ package engine
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"go.starlark.net/repl"
 	"go.starlark.net/starlark"
 )
-
-const data = `
-print(greeting + ", world")
-
-squares = [x*x for x in range(10)]
-
-bar = require("foo")
-baz = bar.sayHello()
-print(baz)
-
-def deploy(params):
-	print(params)
-
-target(deploy)
-`
 
 type Engine struct {
 	scope       starlark.StringDict
@@ -44,7 +30,10 @@ func (eng *Engine) Declare(declaration starlark.StringDict) {
 }
 
 func (eng *Engine) ExecFile(filename string) error {
-	var err error
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
 	eng.scope, err = starlark.ExecFile(eng.thread, filename, data, eng.predeclared)
 	if err != nil {
 		if evalErr, ok := err.(*starlark.EvalError); ok {

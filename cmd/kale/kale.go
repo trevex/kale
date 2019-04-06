@@ -23,8 +23,10 @@ func main() {
 	// Persistent flags
 	flags := cmd.PersistentFlags()
 	flags.BoolVar(&global.DryRun, "dry-run", global.DryRun, "Whether to run target without introducing changes (default false)")
-	flags.StringVar(&global.Namespace, "namespace", global.Namespace, "Which namespace the target should operate in (default \"\")")
-	flags.StringVar(&global.Release, "release", global.Release, "How the artifacts of the target should be named (default \"\")")
+	flags.StringVarP(&global.Namespace, "namespace", "n", global.Namespace, "Which namespace the target should operate in (default \"\")")
+	flags.StringVarP(&global.Release, "release", "r", global.Release, "How the artifacts of the target should be named (default \"\")")
+	var filepath string
+	flags.StringVarP(&filepath, "file", "f", "./kalefile", "Kale-compliant starlark file containing target definitions")
 	// Parse flags once beforehand to make them available via global variables
 	cmd.ParseFlags(os.Args)
 	// Setup modules
@@ -44,8 +46,8 @@ func main() {
 		"require":  builtin.Require(mgr),
 		"target":   builtin.Target(cmd),
 	})
-	// Run the script
-	err := eng.ExecFile("apparent/filename.star")
+	// Load file and execute it
+	err := eng.ExecFile(filepath)
 	if err != nil {
 		log.Fatal(err)
 	}
