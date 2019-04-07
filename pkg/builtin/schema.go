@@ -16,6 +16,13 @@ func filename(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwar
 	if err := starlark.UnpackArgs("filename", args, kwargs, "required?", &required); err != nil {
 		return nil, err
 	}
-	// TODO
-	return starlark.String("foo"), nil
+	dict := createSchemaDict("filename")
+	dict.SetKey(starlark.String("required"), starlark.Bool(required))
+	return dict, nil
+}
+
+func createSchemaDict(schemaType string) *starlark.Dict {
+	dict := starlark.NewDict(16)
+	dict.SetKey(starlark.String("type"), starlark.String(schemaType))
+	return dict
 }
