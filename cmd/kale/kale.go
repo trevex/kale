@@ -34,17 +34,25 @@ func main() {
 	// Setup modules
 	mgr := module.NewManager()
 	mgr.Set("kubectl", kubectl.Builder)
+	// Setup root project
+	proj := builtin.NewProject("", cmd)
 	// Create starlark engine
 	eng := engine.New()
 	eng.Declare(starlark.StringDict{
-		"require": builtin.Require(mgr),
-		"target":  builtin.Target(cmd),
+		"require": builtin.RequireModule(mgr),
+		"target":  builtin.RegisterTarget(proj),
+		"project": builtin.NameProject(proj),
+		"schema":  builtin.SchemaModule(),
 	})
 	// Load file and execute it
 	err := eng.ExecFile(kalefile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+	// Check whether project name was set
+	if proj.Name == "" {
+		// TODO
 	}
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {

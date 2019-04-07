@@ -7,7 +7,7 @@ import (
 	"go.starlark.net/starlark"
 )
 
-func Require(mgr *module.Manager) starlark.Value {
+func RequireModule(mgr *module.Manager) starlark.Value {
 	return starlark.NewBuiltin("require", func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		name := ""
 		params := starlark.NewDict(16)
