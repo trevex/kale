@@ -2,11 +2,11 @@ project("simple")
 
 kubectl = require("kubectl", { "version": ">=v1.10.0" })
 
-def deploy(params):
+def build(params):
     print(params)
     kubectl.apply("test")
     print("last")
 
-target(deploy, params = {
+target(build, params = {
     "values": schema.filename(required = True)
 })

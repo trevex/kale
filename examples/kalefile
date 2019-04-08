@@ -1,3 +1,5 @@
+project("hello")
+
 helm = require('helm', { 'version': '>=2.11.0' })
 kubectl = require('kubectl', { 'version': '>=1.11.0' })
 
@@ -8,16 +10,21 @@ dependency(
     enable_if = 'other.enabled'
 )
 
-dependency(
+test = dependency(
     dir = '$pkg_dir/other',
     passive = true # allows triggering by hand
-)
+) # return value can be used to reference globals/targets/info
 
-def deploy(params):
+def build(params):
     manifests = helm.template(chart, global.namespace, params.values)
-    kubectl.apply(manifests, dry_run=true)
+    copy(kustomize(manifests, patches), global.output_dir)
 
-target(deploy, params = {
+# there is a default deploy target along these lines:
+# def apply(params):
+#    kubectl.apply(manifests, dry_run=true)
+# same goes for clean, delete (delete and apply depend on build!?)
+
+target(build, params = {
     'values': schema.Filename(required = true)
 })
 
@@ -33,3 +40,5 @@ target(deploy, params = {
 # * grafana with custom dashboards (via `rsync` into volume?)
 # * scaling down etcd or cockroachdb
 # * during cleanup (e.g. etcd-operator), checking whether another deployment still uses crds, if not clean them up
+
+# plugin system!?
