@@ -8,5 +8,6 @@ def build(params):
     print("last")
 
 target(build, params = {
-    "values": schema.filename(required = True)
+    "values": schema.filename(required = True),
+    "version": schema.string(default = "0.9.0")
 })

@@ -2,6 +2,10 @@
 
 _Kale_ is a scripting tool using [Starlark](https://github.com/google/starlark-go) to build, package, deploy and operate applications running on kubernetes.
 
+## Features
+
+* Literally not much as of yet
+
 ## Why?
 
 _Kale_ was created from the urge to re-iterate on deployment practices experienced at work. 
@@ -24,5 +28,6 @@ The last and final realization came once I drafted, what is necessary to automat
 __I guess we need a plugin system...__
 
 Linters, integration tests et cetera not everything is coverable by _Kale_, but hopefully plugins can help alleviate that.
+
 
 

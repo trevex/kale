@@ -17,7 +17,8 @@ test = dependency(
 
 def build(params):
     manifests = helm.template(chart, global.namespace, params.values)
-    copy(kustomize(manifests, patches), global.output_dir)
+    copy(kustomize(manifests, patches), global.output_dir) # not up-to-date
+    return manifests # everything a target returns should be copied to output dir?
 
 # there is a default deploy target along these lines:
 # def apply(params):
@@ -25,7 +26,7 @@ def build(params):
 # same goes for clean, delete (delete and apply depend on build!?)
 
 target(build, params = {
-    'values': schema.Filename(required = true)
+    'values': schema.filename(required = true)
 })
 
 # how do params work?
