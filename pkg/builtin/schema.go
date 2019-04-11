@@ -49,7 +49,7 @@ func (obj *SchemaObject) ToDict() starlark.Value {
 func primitiveSchemaObjectFunc(name string, defaultValue interface{}) func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 
-		obj := NewSchemaObject("filename", "")
+		obj := NewSchemaObject(name, defaultValue)
 		if err := obj.UnpackFromArgs(args, kwargs); err != nil {
 			return nil, err
 		}
