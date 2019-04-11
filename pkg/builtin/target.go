@@ -95,10 +95,10 @@ func createCheckParamsFunc(cmd *cobra.Command, paramsSchema *starlark.Dict) (par
 				return starlark.String(key), starlark.Bool(b), nil
 			}
 		case "int":
-			i := obj.Default.(int64)
-			flags.Int64Var(&i, key, i, "TODO")
+			i := obj.Default.(int)
+			flags.IntVar(&i, key, i, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
-				return starlark.String(key), starlark.MakeInt64(i), nil
+				return starlark.String(key), starlark.MakeInt(i), nil
 			}
 		case "float":
 			f := obj.Default.(float64)

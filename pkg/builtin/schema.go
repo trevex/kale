@@ -11,7 +11,7 @@ import (
 var (
 	defaultString string  = ""
 	defaultBool   bool    = false
-	defaultInt    int64   = 0
+	defaultInt    int     = 0
 	defaultFloat  float64 = 0.0
 )
 
@@ -85,14 +85,18 @@ func SchemaObjectFromDict(dict *starlark.Dict) (*SchemaObject, error) {
 	return obj, nil
 }
 
-func (obj *SchemaObject) ToDict() starlark.Value {
+func (obj *SchemaObject) ToDict() (starlark.Value, error) {
 	dict := starlark.NewDict(16)
 	dict.SetKey(starlark.String("type"), starlark.String(obj.Type))
 	dict.SetKey(starlark.String("required"), starlark.Bool(obj.Required))
 	if obj.Default != nil {
-		// TODO: implement helper function to convert any type to starlark value!
+		v, err := toStarlarkValue(obj.Type, obj.Default)
+		if err != nil {
+			return nil, err
+		}
+		dict.SetKey(starlark.String("default"), v)
 	}
-	return dict
+	return dict, nil
 }
 
 func (obj *SchemaObject) UnpackFromArgs(args starlark.Tuple, kwargs []starlark.Tuple) error {
@@ -109,7 +113,7 @@ func primitiveSchemaObjectFunc(name string, defaultValue interface{}) func(_ *st
 		if err := obj.UnpackFromArgs(args, kwargs); err != nil {
 			return nil, err
 		}
-		return obj.ToDict(), nil
+		return obj.ToDict()
 	}
 }
 
@@ -128,5 +132,44 @@ func getDefaultValue(name string) (interface{}, error) {
 		return defaultInt, nil
 	default:
 		return "", fmt.Errorf("Unknown type: %s", name)
+	}
+}
+
+func toStarlarkValue(name string, value interface{}) (starlark.Value, error) {
+	switch name {
+	case "string", "filename":
+		if v, ok := value.(string); ok {
+			return starlark.String(v), nil
+		}
+		if v, ok := value.(starlark.String); ok {
+			return v, nil
+		}
+		return nil, fmt.Errorf("Failed to unpack string!")
+	case "bool":
+		if v, ok := value.(bool); ok {
+			return starlark.Bool(v), nil
+		}
+		if v, ok := value.(starlark.Bool); ok {
+			return v, nil
+		}
+		return nil, fmt.Errorf("Failed to unpack bool!")
+	case "float":
+		if v, ok := value.(float64); ok {
+			return starlark.Float(v), nil
+		}
+		if v, ok := value.(starlark.Float); ok {
+			return v, nil
+		}
+		return nil, fmt.Errorf("Failed to unpack bool!")
+	case "int":
+		if v, ok := value.(int); ok {
+			return starlark.MakeInt(v), nil
+		}
+		if v, ok := value.(starlark.Int); ok {
+			return v, nil
+		}
+		return nil, fmt.Errorf("Failed to unpack bool!")
+	default:
+		return nil, fmt.Errorf("Unsupported type: %s", name)
 	}
 }
