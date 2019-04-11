@@ -13,14 +13,18 @@ type Target struct {
 	// TODO: schema
 }
 
+type paramCheckFunc func() (*starlark.Dict, error)
+
 func RegisterTarget(project *Project) starlark.Value {
 	return starlark.NewBuiltin("target", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var err error
 		targetFunc := &starlark.Function{}
 		paramsSchema := starlark.NewDict(16)
-		if err := starlark.UnpackArgs("target", args, kwargs, "func", &targetFunc, "params?", &paramsSchema); err != nil {
+		if err = starlark.UnpackArgs("target", args, kwargs, "func", &targetFunc, "params?", &paramsSchema); err != nil {
 			return nil, err
 		}
 		// Create info struct
+		var checkParams paramCheckFunc
 		targetName := targetFunc.Name()
 		target := &Target{
 			Name: targetName,
@@ -29,34 +33,93 @@ func RegisterTarget(project *Project) starlark.Value {
 				Short: "TODO",
 				Long:  `TODO`,
 				RunE: func(_ *cobra.Command, args []string) error {
-					targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), starlark.String("hello, params")}}
-					// TODO: proper params
-					_, err := starlark.Call(thread, targetFunc, starlark.Tuple{}, targetKwargs)
+					finalParams, err := checkParams()
+					if err != nil {
+						return err
+					}
+					targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), finalParams}}
+					_, err = starlark.Call(thread, targetFunc, starlark.Tuple{}, targetKwargs)
 					return err
 				},
 			},
 		}
-		// Setup flags
-		flags := target.Cmd.Flags()
-		test := false
-		// TODO: proper flags
-		flags.BoolVar(&test, "test", false, "foo")
-		// TODO: check config?
+		// Crete parameter checking function
+		checkParams, err = createCheckParamsFunc(target.Cmd, paramsSchema)
+		if err != nil {
+			return nil, err
+		}
 		project.AddTarget(target)
 		return starlark.None, nil
 
 	})
 }
 
-func checkTargetsParams(cmd *cobra.Command, paramsSchema *starlark.Dict) (func() (*starlark.Dict, error), error) {
-	// paramFuncs := []func() (starlark.Value, starlark.Value, error){}
-	// for _, tuple := range paramsSchema.Items() {
-	// 	if tuple.Len() != 2 {
-	// 		return nil, fmt.Errorf("While iterating over parameter schema a tuple without length 2 was encountered!")
-	// 	}
-	// 	key := tuple[0]
-	// 	schema := tuple[1]
-
-	// }
-	return nil, fmt.Errorf("TODO: impl")
+func createCheckParamsFunc(cmd *cobra.Command, paramsSchema *starlark.Dict) (paramCheckFunc, error) {
+	paramFuncs := []func() (starlark.Value, starlark.Value, error){}
+	flags := cmd.Flags()
+	for _, tuple := range paramsSchema.Items() {
+		if tuple.Len() != 2 {
+			return nil, fmt.Errorf("While iterating over parameter schema a tuple without length 2 was encountered!")
+		}
+		key, ok := starlark.AsString(tuple[0])
+		if !ok {
+			return nil, fmt.Errorf("Expected string as target parameter key!")
+		}
+		schema, ok := tuple[1].(*starlark.Dict)
+		if !ok {
+			return nil, fmt.Errorf("Expected dict as target paramter value!")
+		}
+		obj, err := SchemaObjectFromDict(schema)
+		if err != nil {
+			return nil, err
+		}
+		var paramFunc func() (starlark.Value, starlark.Value, error)
+		switch obj.Type {
+		case "string":
+			str := obj.Default.(string)
+			flags.StringVar(&str, key, str, "TODO")
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				return starlark.String(key), starlark.String(str), nil
+			}
+		case "filename":
+			filename := obj.Default.(string)
+			flags.StringVar(&filename, key, filename, "TODO")
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				// TODO: check if file exists
+				return starlark.String(key), starlark.String(filename), nil
+			}
+		case "bool":
+			b := obj.Default.(bool)
+			flags.BoolVar(&b, key, b, "TODO")
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				return starlark.String(key), starlark.Bool(b), nil
+			}
+		case "int":
+			i := obj.Default.(int64)
+			flags.Int64Var(&i, key, i, "TODO")
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				return starlark.String(key), starlark.MakeInt64(i), nil
+			}
+		case "float":
+			f := obj.Default.(float64)
+			flags.Float64Var(&f, key, f, "TODO")
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				return starlark.String(key), starlark.Float(f), nil
+			}
+		default:
+			return nil, fmt.Errorf("Type %s not implemented as target parameter", obj.Type)
+		}
+		paramFuncs = append(paramFuncs, paramFunc)
+	}
+	return func() (*starlark.Dict, error) {
+		dict := &starlark.Dict{}
+		for _, f := range paramFuncs {
+			k, v, err := f()
+			if err != nil {
+				return nil, err
+			}
+			dict.SetKey(k, v)
+		}
+		return dict, nil
+	}, nil
 }

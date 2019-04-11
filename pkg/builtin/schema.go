@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	defaultString = ""
-	defaultBool   = false
-	defaultInt    = 0
-	defaultFloat  = 0.0
+	defaultString string  = ""
+	defaultBool   bool    = false
+	defaultInt    int64   = 0
+	defaultFloat  float64 = 0.0
 )
 
 func SchemaModule() starlark.Value {
@@ -71,13 +71,16 @@ func SchemaObjectFromDict(dict *starlark.Dict) (*SchemaObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !ok {
+	if !ok { // no default provided
 		obj.Default, err = getDefaultValue(obj.Type)
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		// TODO
+	} else { // default provided
+		obj.Default, err = util.StarlarkUnpackToInterface(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return obj, nil
 }
