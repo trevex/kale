@@ -12,5 +12,5 @@ target(build, params = {
     "version": schema.string(default = "0.9.0"),
     "b": schema.bool(default = True),
     "f": schema.float(default = 1.0),
-    "i": schema.int(default = "x")
+    "i": schema.int(default = 2)
 })
