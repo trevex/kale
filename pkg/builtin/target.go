@@ -30,8 +30,8 @@ func RegisterTarget(project *Project) starlark.Value {
 			Name: targetName,
 			Cmd: &cobra.Command{
 				Use:   fmt.Sprintf("%s [flags]", targetName),
-				Short: "TODO",
-				Long:  `TODO`,
+				Short: fmt.Sprintf("Executing the '%s'-target. Parameters can be provided by env-variables, a config-file or the commandline-flags below.", targetName),
+				Long:  ``,
 				RunE: func(_ *cobra.Command, args []string) error {
 					finalParams, err := checkParams()
 					if err != nil {
