@@ -3,7 +3,6 @@ package engine
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"go.starlark.net/repl"
 	"go.starlark.net/starlark"
@@ -37,7 +36,7 @@ func (eng *Engine) ExecFile(filename string) error {
 	eng.scope, err = starlark.ExecFile(eng.thread, filename, data, eng.predeclared)
 	if err != nil {
 		if evalErr, ok := err.(*starlark.EvalError); ok {
-			fmt.Fprintln(os.Stderr, evalErr.Backtrace())
+			return fmt.Errorf("%s", evalErr.Backtrace())
 		}
 		return err
 	}
