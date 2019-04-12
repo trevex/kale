@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 
 	"go.starlark.net/repl"
@@ -14,12 +15,12 @@ type Engine struct {
 	thread      *starlark.Thread
 }
 
-func New() *Engine {
+func New(stdout io.Writer) *Engine {
 	return &Engine{
 		predeclared: starlark.StringDict{},
 		thread: &starlark.Thread{
 			Name:  "kale",
-			Print: func(_ *starlark.Thread, msg string) { fmt.Println(msg) }, // TODO: Load function
+			Print: func(_ *starlark.Thread, msg string) { fmt.Fprintln(stdout, msg) }, // TODO: Load function
 		},
 	}
 }
