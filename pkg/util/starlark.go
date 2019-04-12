@@ -28,3 +28,36 @@ func StarlarkUnpackToInterface(x starlark.Value) (interface{}, error) {
 		return nil, fmt.Errorf("Type conversion not implemented for %s", x.Type())
 	}
 }
+
+func ToStarlarkValue(v interface{}) (starlark.Value, error) {
+	// string
+	if x, ok := v.(string); ok {
+		return starlark.String(x), nil
+	}
+	if x, ok := v.(starlark.String); ok {
+		return x, nil
+	}
+	// bool
+	if x, ok := v.(bool); ok {
+		return starlark.Bool(x), nil
+	}
+	if x, ok := v.(starlark.Bool); ok {
+		return x, nil
+	}
+	// float
+	if x, ok := v.(float64); ok {
+		return starlark.Float(x), nil
+	}
+	if x, ok := v.(starlark.Float); ok {
+		return x, nil
+	}
+	// int
+	if x, ok := v.(int); ok {
+		return starlark.MakeInt(x), nil
+	}
+	if x, ok := v.(starlark.Int); ok {
+		return x, nil
+	}
+	return nil, fmt.Errorf("Unsupported type: %v", v)
+
+}

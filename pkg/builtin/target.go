@@ -76,32 +76,47 @@ func createCheckParamsFunc(cmd *cobra.Command, paramsSchema *starlark.Dict) (par
 		var paramFunc func() (starlark.Value, starlark.Value, error)
 		switch obj.Type {
 		case "string":
-			str := obj.Default.(string)
+			str, ok := obj.Default.(string)
+			if !ok {
+				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
+			}
 			flags.StringVar(&str, key, str, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.String(str), nil
 			}
 		case "filename":
-			filename := obj.Default.(string)
+			filename, ok := obj.Default.(string)
+			if !ok {
+				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
+			}
 			flags.StringVar(&filename, key, filename, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				// TODO: check if file exists
 				return starlark.String(key), starlark.String(filename), nil
 			}
 		case "bool":
-			b := obj.Default.(bool)
+			b, ok := obj.Default.(bool)
+			if !ok {
+				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
+			}
 			flags.BoolVar(&b, key, b, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.Bool(b), nil
 			}
 		case "int":
-			i := obj.Default.(int)
+			i, ok := obj.Default.(int)
+			if !ok {
+				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
+			}
 			flags.IntVar(&i, key, i, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.MakeInt(i), nil
 			}
 		case "float":
-			f := obj.Default.(float64)
+			f, ok := obj.Default.(float64)
+			if !ok {
+				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
+			}
 			flags.Float64Var(&f, key, f, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.Float(f), nil

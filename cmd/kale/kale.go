@@ -15,10 +15,11 @@ import (
 
 func main() {
 	cmd := &cobra.Command{
-		Use:          "kale [flags] [target]",
-		SilenceUsage: true,
-		Short:        "",
-		Long:         ``,
+		Use:           "kale [flags] [target]",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Short:         "",
+		Long:          ``,
 	}
 	// Persistent flags
 	flags := cmd.PersistentFlags()
