@@ -7,7 +7,7 @@ dependency(
     git = '...',
     tag = 'v0.4.0',
     rename = 'different'
-    enable_if = 'other.enabled'
+    enable_if = 'other.enabled' % TODO: should be lambda instead!
 )
 
 test = dependency(
@@ -19,9 +19,11 @@ def build(params):
     manifests = helm.template(chart, global.namespace, params.values)
     copy(kustomize(manifests, patches), global.output_dir) # not up-to-date
     return manifests # everything a target returns should be copied to output dir?
+    # or: output(kustomize(manifests, patches), subdir='xy', no_project_dir=True)
 
 # there is a default deploy target along these lines:
 # def apply(params):
+#    manifests = input(build, run=True, glob='*.yaml', regex='...') # sby default lazy, should always output info!
 #    kubectl.apply(manifests, dry_run=true)
 # same goes for clean, delete (delete and apply depend on build!?)
 
