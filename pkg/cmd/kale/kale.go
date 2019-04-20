@@ -21,6 +21,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		Short:         "",
 		Long:          ``,
 	}
+	cmd.SetArgs(args)
 	// Persistent flags
 	flags := cmd.PersistentFlags()
 	flags.BoolVar(&global.DryRun, "dry-run", global.DryRun, "Whether to run target without introducing changes (default false)")

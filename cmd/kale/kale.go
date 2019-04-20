@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	cmd, err := kale.Run(os.Stdout, os.Args)
+	cmd, err := kale.Run(os.Stdout, os.Args[1:])
 	if err != nil { // kalefile failed to execute or misbehaved
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
