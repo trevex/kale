@@ -30,4 +30,8 @@ __I guess we need a plugin system...__
 Linters, integration tests et cetera not everything is coverable by _Kale_, but hopefully plugins can help alleviate that.
 
 
+## FAQ
 
+### Where does the name come from?
+
+In the beginning this tool was called Kompass, but a coworker one evening proposed the name "kale", because he argued kale is ale with a k for kubernetes, which reminds him of brew. While this tool has nothing to do with brew, the name was unique and short and there was nothing in existence using this name.
