@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/builtin"
 	"github.com/trevex/kale/pkg/engine"
+	"github.com/trevex/kale/pkg/helm"
 	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
 	"go.starlark.net/starlark"
@@ -36,6 +37,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	// Setup modules
 	mgr := module.NewManager()
 	mgr.Set("kubectl", kubectl.Builder)
+	mgr.Set("helm", helm.Builder)
 	// Setup root project
 	proj := builtin.NewProject("", cmd)
 	// Create starlark engine

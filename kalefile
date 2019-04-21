@@ -1,6 +1,7 @@
 project("simple")
 
-kubectl = require("kubectl", { "version": ">=v1.10.0" })
+kubectl = require("kubectl", { "version": ">=1.10.0" })
+helm = require("helm", { "version": ">=2.12.0" })
 
 def build(params):
     print(params)
