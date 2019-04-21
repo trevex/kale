@@ -1,7 +1,6 @@
 package kale
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -49,13 +48,12 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		"var":     builtin.VarModule(),
 	})
 	// Load file and execute it
-	err := eng.ExecFile(kalefile)
-	if err != nil {
+	if err := eng.ExecFile(kalefile); err != nil {
 		return nil, err
 	}
 	// Check whether project name was set
-	if proj.Name == "" {
-		return nil, fmt.Errorf("No project name was provided by file: %s", kalefile)
+	if err := proj.ValidateName(); err != nil {
+		return nil, err
 	}
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
