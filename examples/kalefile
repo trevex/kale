@@ -7,17 +7,16 @@ dependency(
     git = '...',
     tag = 'v0.4.0',
     rename = 'different'
-    enable_if = 'other.enabled' % TODO: should be lambda instead!
+    enable_if = 'other.enabled' # TODO: should be lambda instead!
 )
 
 test = dependency(
-    dir = '$pkg_dir/other',
+    source_dir = '$pkg_dir/other',
     passive = true # allows triggering by hand
 ) # return value can be used to reference globals/targets/info
 
 def build(params):
-    manifests = helm.template(chart, global.namespace, params.values)
-    copy(kustomize(manifests, patches), global.output_dir) # not up-to-date
+    manifests = helm.template(chart, var.namespace, var.release, params.values)
     return manifests # everything a target returns should be copied to output dir?
     # or: output(kustomize(manifests, patches), subdir='xy', no_project_dir=True)
 
