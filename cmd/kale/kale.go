@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-Kale, a kubernetes building, scripting and packaging tool.
-*/
 package main
 
 import (
