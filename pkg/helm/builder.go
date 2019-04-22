@@ -11,6 +11,11 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// TODO: Yet, another idea to reduce boiler plate:
+//       ```
+//       helm = require('helm', { 'version': '>=2.11.0', 'defaults': { 'chart_dir': './helm' } })
+//       Provide some defaults via initial module require, that will be used by all subsequent calls of module functions.
+
 func GetVersion() (string, error) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}

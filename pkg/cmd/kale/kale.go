@@ -2,6 +2,8 @@ package kale
 
 import (
 	"io"
+	"path"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/builtin"
@@ -9,6 +11,7 @@ import (
 	"github.com/trevex/kale/pkg/helm"
 	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/stage"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -53,8 +56,16 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		eng.REPL()
 		return nil
 	}
-	// Check whether file exists before
+	// Check whether kalefile exists
 	if util.FileExists(kalefile) {
+		// Get absolute directory of kalefile
+		if dir, err := filepath.Abs(filepath.Dir(kalefile)); err != nil {
+			return nil, err
+		} else {
+			// Update root stage directory to match kalefile
+			stage.Root.ProjectDir = dir
+			stage.Root.Dir = path.Join(dir, ".kale")
+		}
 		// Load file and execute it
 		if err := eng.ExecFile(kalefile); err != nil {
 			return nil, err
