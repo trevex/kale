@@ -61,5 +61,6 @@ var Builder = func(params *starlark.Dict) (starlark.Value, error) {
 		return nil, fmt.Errorf("Helm version %s does not match constraint %s!", version, versionConstraint)
 	}
 	mod.SetKeyFunc(starlark.String("template"), template)
+	mod.SetKeyFunc(starlark.String("dep_build"), depBuild)
 	return mod, nil
 }

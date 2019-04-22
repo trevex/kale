@@ -9,6 +9,7 @@ import (
 	"github.com/trevex/kale/pkg/helm"
 	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -23,10 +24,8 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	cmd.SetArgs(args)
 	// Persistent flags
 	flags := cmd.PersistentFlags()
-	var (
-		kalefile string
-		config   string
-	)
+	kalefile := ""
+	config := ""
 	flags.StringVarP(&kalefile, "file", "f", "./kalefile", "Kale-compliant starlark file containing target definitions")
 	flags.StringVarP(&config, "config", "c", "", "YAML-file containing target-parameters (default \"\")")
 	// Add builtin global flags
@@ -49,18 +48,21 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		"schema":  builtin.SchemaModule(),
 		"var":     builtin.VarModule(),
 	})
-	// Load file and execute it
-	if err := eng.ExecFile(kalefile); err != nil {
-		return nil, err
-	}
-	// Check whether project name was set
-	if err := proj.ValidateName(); err != nil {
-		return nil, err
-	}
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
 		eng.REPL()
 		return nil
+	}
+	// Check whether file exists before
+	if util.FileExists(kalefile) {
+		// Load file and execute it
+		if err := eng.ExecFile(kalefile); err != nil {
+			return nil, err
+		}
+		// Check whether project name was set
+		if err := proj.ValidateName(); err != nil {
+			return nil, err
+		}
 	}
 	// Return the command
 	return cmd, nil

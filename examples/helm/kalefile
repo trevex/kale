@@ -3,10 +3,15 @@ project("simple")
 kubectl = require("kubectl", { "version": ">=1.10.0" })
 helm = require("helm", { "version": ">=2.12.0" })
 
+def prepare(params):
+    print("hmm")
+
 def build(params):
     print(params)
     kubectl.apply("test")
     print("last")
+
+target(prepare)
 
 target(build, params = {
     "values": schema.filename(required = True),
