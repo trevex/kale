@@ -7,7 +7,7 @@ dependency(
     git = '...',
     tag = 'v0.4.0',
     rename = 'different'
-    enable_if = 'other.enabled'
+    enable_if = 'other.enabled' # TODO: should be lambda instead!
 )
 
 test = dependency(
@@ -15,13 +15,22 @@ test = dependency(
     passive = true # allows triggering by hand
 ) # return value can be used to reference globals/targets/info
 
+# what happens during target execution:
+# 1. the parameters are collected
+# 2. checksum is calculated from params + project-dir (TODO: should be set-able via project directive!)
+# 3. a directory for the build-tmp+output is created in .kale/prefix-checksum
+# or 3. if it exists skip!
+# or 3. exist, but flag provided so re-create artifacts
+# 4. copy output to output dir as required!
 def build(params):
-    manifests = helm.template(chart, global.namespace, params.values)
-    copy(kustomize(manifests, patches), global.output_dir) # not up-to-date
+    manifests = helm.template(chart, var.namespace, var.release, params.values)
     return manifests # everything a target returns should be copied to output dir?
+    # or: output(kustomize(manifests, patches), subdir='xy', no_project_dir=True)
 
 # there is a default deploy target along these lines:
+# kubectl.apply(manifests, dry_run=true)
 # def apply(params):
+#    manifests = input(build, run=True, glob='*.yaml', regex='...') # sby default lazy, should always output info!
 #    kubectl.apply(manifests, dry_run=true)
 # same goes for clean, delete (delete and apply depend on build!?)
 

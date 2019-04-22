@@ -5,6 +5,13 @@ helm = require("helm", { "version": ">=2.12.0" })
 
 def prepare(params):
     print("hmm")
+    # chart_with_deps = helm.dep_build(chart_dir="./chart")
+    # output(chart_with_deps) or just return
+    # TODO: output needs to be "Outputable"
+    #       1. Create Outputable-interface
+    #       2. All types should implement interface and we can check this
+    #       3. Use interface to easily copy everything to output dir :)
+    #       x. Create helper function wrapping compatible starlark types (necessary?)
 
 def build(params):
     print(params)
