@@ -20,6 +20,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/trevex/kale/pkg/stage"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -52,6 +54,13 @@ func RegisterTarget(project *Project) starlark.Value {
 					if err != nil {
 						return err
 					}
+					// TODO: calculate checksum
+					checksum, err := util.DirChecksum(stage.Current.ProjectDir) // TODO: use project?
+					if err != nil {
+						return err
+					}
+					fmt.Printf("%x\n", checksum)
+					// Construct kwargs
 					targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), finalParams}}
 					_, err = starlark.Call(thread, targetFunc, starlark.Tuple{}, targetKwargs)
 					return err
