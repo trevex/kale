@@ -28,6 +28,8 @@ var (
 	projectNameRegex = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
 )
 
+var Active *Project = nil
+
 type Project struct {
 	Name         string
 	Dir          string
@@ -58,4 +60,8 @@ func (p *Project) ValidateName() error {
 		return fmt.Errorf("'%s' is not a valid project name! It hast to match '%s'.", p.Name, projectNameRegex.String())
 	}
 	return nil
+}
+
+func (p *Project) Activate() {
+	Active = p
 }

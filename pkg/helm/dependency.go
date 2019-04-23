@@ -19,8 +19,9 @@ package helm
 import (
 	// "os/exec"
 	"fmt"
-	// "path"
+	"path"
 
+	"github.com/trevex/kale/pkg/project"
 	"go.starlark.net/starlark"
 )
 
@@ -31,9 +32,9 @@ func depBuild(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwar
 		return nil, err
 	}
 	// If directory is not absolute prepend the current project directory
-	// if !path.IsAbs(chartDir) {
-	// 	chartDir = path.Join(stage.Current.ProjectDir, chartDir)
-	// }
+	if !path.IsAbs(chartDir) {
+		chartDir = path.Join(project.Active.Dir, chartDir)
+	}
 	fmt.Println(chartDir)
 	return starlark.None, nil
 }

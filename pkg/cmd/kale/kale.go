@@ -52,16 +52,17 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	// Parse flags once beforehand to make them available via global variables
 	cmd.ParseFlags(args)
 	// TODO: if err := builtin.VarCheckRequired(cfg); err != nil {
-	// Setup modules
-	mgr := module.NewManager()
-	mgr.Set("kubectl", kubectl.Builder)
-	mgr.Set("helm", helm.Builder)
 	// Setup root project as unnamed project, has to be set by kalefile
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 	proj := project.New("", wd, cmd)
+	proj.Activate() // Setup as current project
+	// Setup modules
+	mgr := module.NewManager()
+	mgr.Set("kubectl", kubectl.Builder)
+	mgr.Set("helm", helm.Builder)
 	// Create starlark engine
 	eng := engine.New(stdout)
 	eng.Declare(starlark.StringDict{

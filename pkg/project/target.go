@@ -40,6 +40,7 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 		Short: fmt.Sprintf("Executing the '%s'-target. Parameters can be provided by env-variables, a config-file or the commandline-flags below.", target.Name),
 		Long:  ``,
 		RunE: func(_ *cobra.Command, args []string) error {
+			proj.Activate() // Make sure project is set as current
 			params, err := target.checkParams()
 			if err != nil {
 				return err
