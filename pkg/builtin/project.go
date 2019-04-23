@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	projectNameRegex = regexp.MustCompile("^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$")
+	projectNameRegex = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
 )
 
 type Project struct {
