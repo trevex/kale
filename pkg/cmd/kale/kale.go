@@ -18,7 +18,7 @@ package kale
 
 import (
 	"io"
-	"path"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -27,7 +27,7 @@ import (
 	"github.com/trevex/kale/pkg/helm"
 	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
-	"github.com/trevex/kale/pkg/stage"
+	"github.com/trevex/kale/pkg/project"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -56,16 +56,20 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	mgr := module.NewManager()
 	mgr.Set("kubectl", kubectl.Builder)
 	mgr.Set("helm", helm.Builder)
-	// Setup root project
-	proj := builtin.NewProject("", cmd)
+	// Setup root project as unnamed project, has to be set by kalefile
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	proj := project.New("", wd, cmd)
 	// Create starlark engine
 	eng := engine.New(stdout)
 	eng.Declare(starlark.StringDict{
+		"schema":  builtin.SchemaModule(),
 		"require": builtin.RequireModule(mgr),
 		"target":  builtin.RegisterTarget(proj),
 		"project": builtin.NameProject(proj),
-		"schema":  builtin.SchemaModule(),
-		"var":     builtin.VarModule(),
+		"var":     builtin.VarModule(proj),
 	})
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
@@ -78,9 +82,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		if dir, err := filepath.Abs(filepath.Dir(kalefile)); err != nil {
 			return nil, err
 		} else {
-			// Update root stage directory to match kalefile
-			stage.Root.ProjectDir = dir
-			stage.Root.Dir = path.Join(dir, ".kale")
+			proj.Dir = dir
 		}
 		// Load file and execute it
 		if err := eng.ExecFile(kalefile); err != nil {

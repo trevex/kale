@@ -19,7 +19,6 @@ package util
 import (
 	"crypto/sha256"
 	"encoding/binary"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"

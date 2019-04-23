@@ -19,6 +19,7 @@ package builtin
 import (
 	"github.com/spf13/pflag"
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/project"
 	"go.starlark.net/starlark"
 )
 
@@ -34,7 +35,7 @@ var Var = &GlobalVariables{
 	Release:   "",
 }
 
-func VarModule() starlark.Value {
+func VarModule(proj *project.Project) starlark.Value {
 	mod := &module.Module{}
 	mod.SetKey(starlark.String("dry_run"), starlark.Bool(Var.DryRun))
 	mod.SetKey(starlark.String("namespace"), starlark.String(Var.Namespace))
