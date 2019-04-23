@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-guestbook
+spec:
+  selector:
+    matchLabels:
+      app: guestbook
+      tier: frontend
+      release: {{ .Release.Name }}
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: frontend
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google-samples/gb-frontend:v4
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: env
+        - name: REDIS_MASTER_SERVICE_HOST
+          value: {{ .Release.Name }}-redis-master
+        - name: REDIS_SLAVE_SERVICE_HOST
+          value: {{ .Release.Name }}-redis-slave
+        ports:
+        - containerPort: 80
+
