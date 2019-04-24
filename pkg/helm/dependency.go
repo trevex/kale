@@ -33,7 +33,7 @@ func depBuild(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwar
 	}
 	// If directory is not absolute prepend the current project directory
 	if !path.IsAbs(chartDir) {
-		chartDir = path.Join(project.Active.Dir, chartDir)
+		chartDir = path.Join(project.ActiveProject.Dir, chartDir)
 	}
 	fmt.Println(chartDir)
 	return starlark.None, nil

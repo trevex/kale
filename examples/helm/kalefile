@@ -3,6 +3,11 @@ project("simple")
 kubectl = require("kubectl", { "version": ">=1.10.0" })
 helm = require("helm", { "version": ">=2.12.0" })
 
+g = global_params({
+    'global_opt': schema.string(default = "x")
+})
+print(g)
+
 def prepare(params):
     chart_with_deps = helm.dep_build(chart_dir="./chart")
     # output(chart_with_deps) or just return

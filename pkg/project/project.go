@@ -21,14 +21,14 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/trevex/kale/pkg/schema"
 	"go.starlark.net/starlark"
 )
 
 var (
-	projectNameRegex = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
+	projectNameRegex          = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
+	ActiveProject    *Project = nil
 )
-
-var Active *Project = nil
 
 type Project struct {
 	Name         string
@@ -48,11 +48,17 @@ func New(name string, dir string, cmd *cobra.Command) *Project {
 	}
 }
 
-func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *starlark.Function) *Target {
+func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *starlark.Function, paramsSchema *starlark.Dict) (*Target, error) {
+	var err error
 	target := newTarget(p, name, thread, targetFunc)
+	target.CheckParams, err = schema.ConstructParameterCheck(target.Cmd.Flags(), paramsSchema)
+	if err != nil {
+		return nil, err
+	}
+	// Create parameter checking function
 	p.Targets = append(p.Targets, target)
 	p.Cmd.AddCommand(target.Cmd)
-	return target
+	return target, nil
 }
 
 func (p *Project) ValidateName() error {
@@ -63,5 +69,5 @@ func (p *Project) ValidateName() error {
 }
 
 func (p *Project) Activate() {
-	Active = p
+	ActiveProject = p
 }

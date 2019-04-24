@@ -17,23 +17,26 @@ limitations under the License.
 package builtin
 
 import (
-	"github.com/trevex/kale/pkg/project"
+	"github.com/spf13/pflag"
+	"github.com/trevex/kale/pkg/schema"
 	"go.starlark.net/starlark"
 )
 
-func RegisterTarget(proj *project.Project) starlark.Value {
-	return starlark.NewBuiltin("target", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var err error
-		targetFunc := &starlark.Function{}
+func GlobalParams(flags *pflag.FlagSet) starlark.Value {
+	return starlark.NewBuiltin("global_params", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		paramsSchema := starlark.NewDict(16)
-		if err = starlark.UnpackArgs("target", args, kwargs, "func", &targetFunc, "params?", &paramsSchema); err != nil {
+		if err := starlark.UnpackArgs("global_params", args, kwargs, "params", &paramsSchema); err != nil {
 			return nil, err
 		}
 		//
-		_, err = proj.AddTarget(targetFunc.Name(), thread, targetFunc, paramsSchema)
+		checkParams, err := schema.ConstructParameterCheck(flags, paramsSchema)
 		if err != nil {
 			return nil, err
 		}
-		return starlark.None, nil
+		params, err := checkParams()
+		if err != nil {
+			return nil, err
+		}
+		return params, nil
 	})
 }

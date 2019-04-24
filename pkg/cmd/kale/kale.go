@@ -66,11 +66,12 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	// Create starlark engine
 	eng := engine.New(stdout)
 	eng.Declare(starlark.StringDict{
-		"schema":  builtin.SchemaModule(),
-		"require": builtin.RequireModule(mgr),
-		"target":  builtin.RegisterTarget(proj),
-		"project": builtin.NameProject(proj),
-		"var":     builtin.VarModule(proj),
+		"schema":        builtin.SchemaModule(),
+		"global_params": builtin.GlobalParams(flags),
+		"require":       builtin.RequireModule(mgr),
+		"target":        builtin.RegisterTarget(proj),
+		"project":       builtin.NameProject(proj),
+		"var":           builtin.VarModule(proj),
 	})
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
