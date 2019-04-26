@@ -9,7 +9,7 @@ var.extend({ # adds additional global variables
 
 def prepare(params):
     chart_with_deps = helm.dep_build(chart_dir="./chart")
-    # output(chart_with_deps) or just return
+    output(chart_with_deps) # TODO: or just return?
     # TODO: output needs to be "Outputable"
     #       1. Create Outputable-interface
     #       2. All types should implement interface and we can check this
