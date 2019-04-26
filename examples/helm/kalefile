@@ -3,10 +3,9 @@ project("simple")
 kubectl = require("kubectl", { "version": ">=1.10.0" })
 helm = require("helm", { "version": ">=2.12.0" })
 
-g = global_params({
-    'global_opt': schema.string(default = "x")
+var.extend({
+    "bar_baz": schema.string(default = "foo")
 })
-print(g)
 
 def prepare(params):
     chart_with_deps = helm.dep_build(chart_dir="./chart")
@@ -19,6 +18,7 @@ def prepare(params):
 
 def build(params):
     print(params)
+    print(params.version)
     kubectl.apply("test")
     print("last")
 

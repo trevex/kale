@@ -18,12 +18,13 @@ package schema
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/pflag"
 	"go.starlark.net/starlark"
 )
 
-type ParameterCheck func() (*starlark.Dict, error)
+type ParameterCheck func(*starlark.Dict) error
 
 func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) (ParameterCheck, error) {
 	paramFuncs := []func() (starlark.Value, starlark.Value, error){}
@@ -31,10 +32,11 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 		if tuple.Len() != 2 {
 			return nil, fmt.Errorf("While iterating over parameter schema a tuple without length 2 was encountered!")
 		}
-		key, ok := starlark.AsString(tuple[0])
+		key, ok := starlark.AsString(tuple[0]) // TODO: check that key is "conform"
 		if !ok {
 			return nil, fmt.Errorf("Expected string as target parameter key!")
 		}
+		keyFlag := strings.ReplaceAll(key, "_", "-") // Use dashes in flags
 		dict, ok := tuple[1].(*starlark.Dict)
 		if !ok {
 			return nil, fmt.Errorf("Expected dict as target paramter value!")
@@ -50,7 +52,7 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			if !ok {
 				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
 			}
-			flags.StringVar(&str, key, str, "TODO")
+			flags.StringVar(&str, keyFlag, str, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.String(str), nil
 			}
@@ -59,7 +61,7 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			if !ok {
 				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
 			}
-			flags.StringVar(&filename, key, filename, "TODO")
+			flags.StringVar(&filename, keyFlag, filename, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				// TODO: check if file exists
 				return starlark.String(key), starlark.String(filename), nil
@@ -69,7 +71,7 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			if !ok {
 				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
 			}
-			flags.BoolVar(&b, key, b, "TODO")
+			flags.BoolVar(&b, keyFlag, b, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.Bool(b), nil
 			}
@@ -78,7 +80,7 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			if !ok {
 				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
 			}
-			flags.IntVar(&i, key, i, "TODO")
+			flags.IntVar(&i, keyFlag, i, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.MakeInt(i), nil
 			}
@@ -87,7 +89,7 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			if !ok {
 				return nil, fmt.Errorf("Provided default '%v' not of type '%s!", obj.Default, obj.Type)
 			}
-			flags.Float64Var(&f, key, f, "TODO")
+			flags.Float64Var(&f, keyFlag, f, "TODO")
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.Float(f), nil
 			}
@@ -96,15 +98,14 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 		}
 		paramFuncs = append(paramFuncs, paramFunc)
 	}
-	return func() (*starlark.Dict, error) {
-		dict := &starlark.Dict{}
+	return func(dict *starlark.Dict) error {
 		for _, f := range paramFuncs {
 			k, v, err := f()
 			if err != nil {
-				return nil, err
+				return err
 			}
 			dict.SetKey(k, v)
 		}
-		return dict, nil
+		return nil
 	}, nil
 }

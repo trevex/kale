@@ -20,6 +20,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/trevex/kale/pkg/module"
 	"github.com/trevex/kale/pkg/project"
+	"github.com/trevex/kale/pkg/schema"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -35,11 +37,12 @@ var Var = &GlobalVariables{
 	Release:   "",
 }
 
-func VarModule(proj *project.Project) starlark.Value {
-	mod := &module.Module{}
+func VarModule(proj *project.Project) starlark.Value { // TODO: needs project?
+	mod := &module.Module{} // TODO: at some point even builtin variables should be taken care of by some helper function
 	mod.SetKey(starlark.String("dry_run"), starlark.Bool(Var.DryRun))
 	mod.SetKey(starlark.String("namespace"), starlark.String(Var.Namespace))
 	mod.SetKey(starlark.String("release"), starlark.String(Var.Release))
+	mod.SetKeyFunc(starlark.String("extend"), extend(mod, proj.Cmd.PersistentFlags()))
 	return mod
 }
 
@@ -48,4 +51,23 @@ func VarFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&Var.Namespace, "namespace", "n", Var.Namespace, "Which namespace the target should operate in (default \"\")")
 	flags.StringVarP(&Var.Release, "release", "r", Var.Release, "How the artifacts of the target should be named (default \"\")")
 
+}
+
+func extend(mod *module.Module, flags *pflag.FlagSet) util.StarlarkFunction {
+	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		paramsSchema := starlark.NewDict(16)
+		if err := starlark.UnpackArgs("extend", args, kwargs, "params", &paramsSchema); err != nil {
+			return nil, err
+		}
+		//
+		checkParams, err := schema.ConstructParameterCheck(flags, paramsSchema)
+		if err != nil {
+			return nil, err
+		}
+		err = checkParams(&mod.Dict)
+		if err != nil {
+			return nil, err
+		}
+		return starlark.None, nil
+	}
 }

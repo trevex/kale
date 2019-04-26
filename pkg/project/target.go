@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/trevex/kale/pkg/module"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -31,7 +32,7 @@ var (
 type Target struct {
 	Name        string
 	Cmd         *cobra.Command // TODO: maybe private?
-	CheckParams func() (*starlark.Dict, error)
+	CheckParams func(*starlark.Dict) error
 }
 
 func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *starlark.Function) *Target {
@@ -47,7 +48,8 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 			// but keep reference to previous target
 			proj.Activate()
 			prev := target.Activate()
-			params, err := target.CheckParams()
+			params := &module.Module{} // Allows access via dot notation
+			err := target.CheckParams(&params.Dict)
 			if err != nil {
 				return err
 			}
