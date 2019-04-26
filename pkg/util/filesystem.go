@@ -19,6 +19,7 @@ package util
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -62,4 +63,8 @@ func DirChecksum(dir string) ([]byte, error) {
 		return nil, err
 	}
 	return h.Sum(nil), nil
+}
+
+func ChecksumToString(c []byte) string {
+	return fmt.Sprintf("%x", c)
 }

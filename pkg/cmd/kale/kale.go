@@ -19,6 +19,7 @@ package kale
 import (
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -86,6 +87,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 			return nil, err
 		} else {
 			proj.Dir = dir
+			proj.CacheDir = path.Join(dir, ".kale")
 		}
 		// Load file and execute it
 		if err := eng.ExecFile(kalefile); err != nil {

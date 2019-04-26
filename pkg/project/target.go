@@ -21,7 +21,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/module"
-	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -33,6 +32,7 @@ type Target struct {
 	Name        string
 	Cmd         *cobra.Command // TODO: maybe private?
 	CheckParams func(*starlark.Dict) error
+	CacheDir    string
 }
 
 func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *starlark.Function) *Target {
@@ -48,25 +48,25 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 			// but keep reference to previous target
 			proj.Activate()
 			prev := target.Activate()
+			defer func() {
+				// Deactivate and if there was a previous target, activate it
+				target.Deactivate()
+				if prev != nil {
+					prev.Activate()
+				}
+
+			}()
+			//
+			fmt.Println(target.CacheDir)
+			//
 			params := &module.Module{} // Allows access via dot notation
 			err := target.CheckParams(&params.Dict)
 			if err != nil {
 				return err
 			}
-			// TODO: calculate checksum
-			checksum, err := util.DirChecksum(proj.Dir)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%x\n", checksum)
 			// Construct kwargs
 			targetKwargs := []starlark.Tuple{starlark.Tuple{starlark.String("params"), params}}
 			_, err = starlark.Call(thread, targetFunc, starlark.Tuple{}, targetKwargs)
-			// Deactivate and if there was a previous target, activate it
-			target.Deactivate()
-			if prev != nil {
-				prev.Activate()
-			}
 			return err
 		},
 	}

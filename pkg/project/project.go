@@ -18,10 +18,12 @@ package project
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/schema"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -33,9 +35,11 @@ var (
 type Project struct {
 	Name         string
 	Dir          string
+	CacheDir     string
 	Targets      []*Target
 	Dependencies []*Project
 	Cmd          *cobra.Command
+	checksum     string
 }
 
 func New(name string, dir string, cmd *cobra.Command) *Project {
@@ -45,6 +49,7 @@ func New(name string, dir string, cmd *cobra.Command) *Project {
 		Targets:      []*Target{},
 		Dependencies: []*Project{},
 		Cmd:          cmd,
+		checksum:     "",
 	}
 }
 
@@ -55,6 +60,14 @@ func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *st
 	if err != nil {
 		return nil, err
 	}
+	if p.checksum == "" {
+		checksum, err := util.DirChecksum(p.Dir)
+		if err != nil {
+			return nil, err
+		}
+		p.checksum = util.ChecksumToString(checksum)
+	}
+	target.CacheDir = path.Join(p.CacheDir, fmt.Sprintf("%s-%s", name, p.checksum))
 	// Create parameter checking function
 	p.Targets = append(p.Targets, target)
 	p.Cmd.AddCommand(target.Cmd)
