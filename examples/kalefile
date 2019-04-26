@@ -3,11 +3,11 @@ project("hello")
 helm = require('helm', { 'version': '>=2.11.0' })
 kubectl = require('kubectl', { 'version': '>=1.11.0' })
 
-# global parameters
-g = global_params({
-    'global_opt': schema.string(default = "x")
+# global variables
+var.extend({
+    "foo": schema.string(default = "bar")
 })
-# TODO: global params and params == modules? to use dot syntax?
+
 dependency(
     git = '...',
     tag = 'v0.4.0',

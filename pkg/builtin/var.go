@@ -59,7 +59,7 @@ func extend(mod *module.Module, flags *pflag.FlagSet) util.StarlarkFunction {
 		if err := starlark.UnpackArgs("extend", args, kwargs, "params", &paramsSchema); err != nil {
 			return nil, err
 		}
-		//
+		// TODO: check against name clashes!
 		checkParams, err := schema.ConstructParameterCheck(flags, paramsSchema)
 		if err != nil {
 			return nil, err

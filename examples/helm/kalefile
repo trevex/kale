@@ -3,7 +3,7 @@ project("simple")
 kubectl = require("kubectl", { "version": ">=1.10.0" })
 helm = require("helm", { "version": ">=2.12.0" })
 
-var.extend({
+var.extend({ # adds additional global variables
     "bar_baz": schema.string(default = "foo")
 })
 
