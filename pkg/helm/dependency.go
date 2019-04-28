@@ -47,6 +47,7 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 		}
 		s1 := cache.NewStage("helm_dep_build1", b.Build())
 		fmt.Println(s1.Dir) // DEBUG
+		util.CopyDir(chartDir, s1.Dir)
 		// TODO: check if stage exists already, if so skip
 		// => maybe some standardized logging package necessary? e.g. report module?
 		return starlark.None, nil
