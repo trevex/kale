@@ -22,6 +22,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/mr-tron/base58"
 )
 
 func FileExists(name string) bool {
@@ -65,5 +67,5 @@ func DirChecksum(dir string) ([]byte, error) {
 }
 
 func ChecksumToString(c []byte) string {
-	return string(Base58Encode(c))
+	return string(base58.Encode(c))
 }
