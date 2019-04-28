@@ -23,6 +23,7 @@ import (
 
 	"github.com/trevex/kale/pkg/cache"
 	"github.com/trevex/kale/pkg/project"
+	"github.com/trevex/kale/pkg/report"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -46,8 +47,9 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 			return nil, err
 		}
 		s1 := cache.NewStage("helm_dep_build1", b.Build())
-		fmt.Println(s1.Dir) // DEBUG
-		util.CopyDir(chartDir, s1.Dir)
+		fmt.Println(s1.Dir)            // DEBUG
+		util.CopyDir(chartDir, s1.Dir) // DEBUG
+		report.SkipStepf("Stage with name '%s' exists, rebuilding of helm dependencies not necessary.", s1.Name)
 		// TODO: check if stage exists already, if so skip
 		// => maybe some standardized logging package necessary? e.g. report module?
 		return starlark.None, nil

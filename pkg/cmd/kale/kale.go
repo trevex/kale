@@ -30,6 +30,7 @@ import (
 	"github.com/trevex/kale/pkg/kubectl"
 	"github.com/trevex/kale/pkg/module"
 	"github.com/trevex/kale/pkg/project"
+	"github.com/trevex/kale/pkg/report"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -42,7 +43,10 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		Short:         "",
 		Long:          ``,
 	}
+	cmd.SetOutput(stdout)
 	cmd.SetArgs(args)
+	//
+	report.SetOutput(stdout)
 	// Persistent flags
 	flags := cmd.PersistentFlags()
 	kalefile := ""

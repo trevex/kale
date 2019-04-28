@@ -6,11 +6,14 @@ import (
 )
 
 type Stage struct {
-	Dir string
+	Name string
+	Dir  string
 }
 
 func NewStage(prefix, checksum string) *Stage {
+	name := fmt.Sprintf("%s-%s", prefix, checksum)
 	return &Stage{
-		Dir: path.Join(GetCacheDir(), fmt.Sprintf("%s-%s", prefix, checksum)),
+		Name: name,
+		Dir:  path.Join(GetCacheDir(), name),
 	}
 }
