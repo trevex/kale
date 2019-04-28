@@ -54,7 +54,6 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 				if prev != nil {
 					prev.Activate()
 				}
-
 			}()
 			//
 			fmt.Println(target.CacheDir)
