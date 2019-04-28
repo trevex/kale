@@ -39,14 +39,16 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 			chartDir = path.Join(proj.Dir, chartDir)
 		}
 		fmt.Println(chartDir) // DEBUG
-		// Calculate checksum of requirements files
+		// Calculate checksum of requirements files and current params
 		b := cache.NewChecksumBuilder()
+		b.String(chartDir, fmt.Sprintf("%v", verify))
 		if err := b.File(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock")); err != nil {
 			return nil, err
 		}
-		fmt.Println(b.Build())
-		// cacheDir := path.Join(project.GetCurrentCacheDir(), fmt.Sprintf("helm_dep_build1-%s", requirementsChecksum))
-		// fmt.Println(cacheDir) // DEBUG
+		s1 := cache.NewStage("helm_dep_build1", b.Build())
+		fmt.Println(s1.Dir) // DEBUG
+		// TODO: check if stage exists already, if so skip
+		// => maybe some standardized logging package necessary? e.g. report module?
 		return starlark.None, nil
 	}
 }

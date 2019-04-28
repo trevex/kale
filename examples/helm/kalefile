@@ -16,25 +16,6 @@ def prepare(params):
     #       3. Use interface to easily copy everything to output dir :)
     #       x. Create helper function wrapping compatible starlark types (necessary?)
 
-# TODO: stages/checksum/cache-dir structure!?
-#       1. The project has a reference to a stage, but it is created ahead of time
-#       2. Each target added will receive a sub stage
-#       3. Each call can retrieve the currently active stage via helper method
-#       4. For a simple command it can create a SubStage from a checksum object and a prefix
-# Refactor checksum into own package with OO-approach, e.g.
-# b := checksum.NewBuilder()
-# b.AddDir("test")
-# b.AddFile("asd.yaml") # always use mod timestamp?
-# b.AddString("asdasd")
-# sha := b.Build()
-# c := cache.New(prefix, sha) # checks in with project and target to see what is active (means we can remove cachedir logic from target as well?) Activate updates CacheDir?
-# if c.Exists() {
-#     report.SkipStep("")
-# } else {
-#     Do()
-# }
-
-
 def build(params):
     print(params)
     print(params.version)

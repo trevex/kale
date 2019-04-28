@@ -58,6 +58,12 @@ func (b *ChecksumBuilder) File(filepaths ...string) error {
 	return nil
 }
 
+func (b *ChecksumBuilder) String(values ...string) {
+	for _, s := range values {
+		b.h.Write([]byte(s))
+	}
+}
+
 func (b *ChecksumBuilder) Build() string {
 	return string(base58.Encode(b.h.Sum(nil)))
 }

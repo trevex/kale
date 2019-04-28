@@ -2,6 +2,7 @@ package cache
 
 import (
 	"os"
+	"path"
 )
 
 var (
@@ -19,4 +20,20 @@ func init() {
 
 func SetRootDir(dir string) {
 	segments[0] = dir
+}
+
+func Push(subdir string) int {
+	segments = append(segments, subdir)
+	return len(segments)
+}
+
+func Pop(length int) {
+	if length < 2 {
+		return // leave root in-tact
+	}
+	segments = segments[:length]
+}
+
+func GetCacheDir() string {
+	return path.Join(segments...)
 }
