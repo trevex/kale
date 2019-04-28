@@ -21,27 +21,32 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/trevex/kale/pkg/cache"
 	"github.com/trevex/kale/pkg/project"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
-func depBuild(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	chartDir := ""
-	verify := false
-	if err := starlark.UnpackArgs("dep_build", args, kwargs, "chart_dir", &chartDir, "verify?", &verify); err != nil {
-		return nil, err
+func depBuild(proj *project.Project) util.StarlarkFunction {
+	return func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		chartDir := ""
+		verify := false
+		if err := starlark.UnpackArgs("dep_build", args, kwargs, "chart_dir", &chartDir, "verify?", &verify); err != nil {
+			return nil, err
+		}
+		// If directory is not absolute prepend the current project directory
+		if !path.IsAbs(chartDir) {
+			chartDir = path.Join(proj.Dir, chartDir)
+		}
+		fmt.Println(chartDir) // DEBUG
+		// Calculate checksum of requirements files
+		b := cache.NewChecksumBuilder()
+		if err := b.File(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock")); err != nil {
+			return nil, err
+		}
+		fmt.Println(b.Build())
+		// cacheDir := path.Join(project.GetCurrentCacheDir(), fmt.Sprintf("helm_dep_build1-%s", requirementsChecksum))
+		// fmt.Println(cacheDir) // DEBUG
+		return starlark.None, nil
 	}
-	// If directory is not absolute prepend the current project directory
-	if !path.IsAbs(chartDir) {
-		chartDir = path.Join(project.ActiveProject.Dir, chartDir)
-	}
-	fmt.Println(chartDir) // DEBUG
-	requirementsChecksum, err := util.FileChecksum(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock"))
-	if err != nil {
-		return nil, err
-	}
-	cacheDir := path.Join(project.GetCurrentCacheDir(), fmt.Sprintf("dep_build-%s", requirementsChecksum))
-	fmt.Println(cacheDir) // DEBUG
-	return starlark.None, nil
 }

@@ -24,6 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/builtin"
+	"github.com/trevex/kale/pkg/cache"
 	"github.com/trevex/kale/pkg/engine"
 	"github.com/trevex/kale/pkg/helm"
 	"github.com/trevex/kale/pkg/kubectl"
@@ -59,7 +60,6 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		return nil, err
 	}
 	proj := project.New("", wd, cmd)
-	proj.Activate() // Setup as current project
 	// Setup modules
 	mgr := module.NewManager()
 	mgr.Set("kubectl", kubectl.Builder)
@@ -68,7 +68,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	eng := engine.New(stdout)
 	eng.Declare(starlark.StringDict{
 		"schema":  builtin.SchemaModule(),
-		"require": builtin.RequireModule(mgr),
+		"require": builtin.RequireModule(proj, mgr),
 		"target":  builtin.RegisterTarget(proj),
 		"project": builtin.NameProject(proj),
 		"var":     builtin.VarModule(proj),
@@ -85,9 +85,9 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		// Get absolute directory of kalefile
 		if dir, err := filepath.Abs(filepath.Dir(kalefile)); err != nil {
 			return nil, err
-		} else {
+		} else { // The kalefile exists, therefore we should update the directories
 			proj.Dir = dir
-			proj.CacheDir = path.Join(dir, ".kale")
+			cache.SetRootDir(path.Join(dir, ".kale"))
 		}
 		// Load file and execute it
 		if err := eng.ExecFile(kalefile); err != nil {

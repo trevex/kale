@@ -20,10 +20,11 @@ import (
 	"fmt"
 
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/project"
 	"go.starlark.net/starlark"
 )
 
-func RequireModule(mgr *module.Manager) starlark.Value {
+func RequireModule(proj *project.Project, mgr *module.Manager) starlark.Value {
 	return starlark.NewBuiltin("require", func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		name := ""
 		params := starlark.NewDict(16)
@@ -31,7 +32,7 @@ func RequireModule(mgr *module.Manager) starlark.Value {
 			return nil, err
 		}
 		if builder, ok := mgr.Get(name); ok {
-			if mod, err := builder(params); err == nil {
+			if mod, err := builder(proj, params); err == nil {
 				return mod, nil
 			} else {
 				return nil, err

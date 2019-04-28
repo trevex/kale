@@ -18,39 +18,32 @@ package project
 
 import (
 	"fmt"
-	"path"
 	"regexp"
 
 	"github.com/spf13/cobra"
 	"github.com/trevex/kale/pkg/schema"
-	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
 var (
-	projectNameRegex          = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
-	ActiveProject    *Project = nil
+	projectNameRegex = regexp.MustCompile(`^[A-Za-z]{1}[A-Za-z0-9-]*[A-Za-z0-9]{1}$`)
 )
 
 type Project struct {
 	Name         string
 	Dir          string
-	CacheDir     string
 	Targets      []*Target
 	Dependencies []*Project
 	Cmd          *cobra.Command
-	checksum     string
 }
 
 func New(name string, dir string, cmd *cobra.Command) *Project {
 	return &Project{
 		Name:         name,
 		Dir:          dir,
-		CacheDir:     path.Join(dir, ".kale"),
 		Targets:      []*Target{},
 		Dependencies: []*Project{},
 		Cmd:          cmd,
-		checksum:     "",
 	}
 }
 
@@ -61,13 +54,6 @@ func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *st
 	if err != nil {
 		return nil, err
 	}
-	if p.checksum == "" {
-		p.checksum, err = util.DirChecksum(p.Dir)
-		if err != nil {
-			return nil, err
-		}
-	}
-	target.CacheDir = path.Join(p.CacheDir, name)
 	// Create parameter checking function
 	p.Targets = append(p.Targets, target)
 	p.Cmd.AddCommand(target.Cmd)
@@ -79,8 +65,4 @@ func (p *Project) ValidateName() error {
 		return fmt.Errorf("'%s' is not a valid project name! It hast to match '%s'.", p.Name, projectNameRegex.String())
 	}
 	return nil
-}
-
-func (p *Project) Activate() {
-	ActiveProject = p
 }

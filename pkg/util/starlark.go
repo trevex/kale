@@ -75,5 +75,32 @@ func ToStarlarkValue(v interface{}) (starlark.Value, error) {
 		return x, nil
 	}
 	return nil, fmt.Errorf("Unsupported type: %v", v)
+}
 
+type DotDict struct {
+	starlark.Dict
+}
+
+func (m *DotDict) Type() string { return "dotdict" }
+
+func (m *DotDict) Attr(name string) (starlark.Value, error) {
+	if v, found, _ := m.Get(starlark.String(name)); found {
+		return v, nil
+	} else {
+		v, err := m.Dict.Attr(name)
+		return v, err
+	}
+}
+func (m *DotDict) AttrNames() []string {
+	names := m.Dict.AttrNames()
+	for _, v := range m.Keys() {
+		if str, ok := starlark.AsString(v); ok {
+			names = append(names, str)
+		}
+	}
+	return names
+}
+
+func (m *DotDict) SetKeyFunc(name starlark.String, fn StarlarkFunction) error {
+	return m.SetKey(name, starlark.NewBuiltin(string(name), fn))
 }

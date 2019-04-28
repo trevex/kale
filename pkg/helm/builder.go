@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/project"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -46,21 +47,23 @@ func GetVersion() (string, error) {
 	return version, nil
 }
 
-func template(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var (
-		chart     string
-		namespace string
-		release   string
-		values    string
-	)
-	if err := starlark.UnpackArgs("template", args, kwargs, "chart", &chart, "namespace?", &namespace, "release?", &release, "values?", &values); err != nil {
-		return nil, err
+func template(proj *project.Project) util.StarlarkFunction {
+	return func(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var (
+			chart     string
+			namespace string
+			release   string
+			values    string
+		)
+		if err := starlark.UnpackArgs("template", args, kwargs, "chart", &chart, "namespace?", &namespace, "release?", &release, "values?", &values); err != nil {
+			return nil, err
+		}
+		fmt.Printf("helm chart %s\n", chart)
+		return starlark.None, nil
 	}
-	fmt.Printf("helm chart %s\n", chart)
-	return starlark.None, nil
 }
 
-var Builder = func(params *starlark.Dict) (starlark.Value, error) {
+var Builder = func(proj *project.Project, params *starlark.Dict) (starlark.Value, error) {
 	mod := &module.Module{}
 	versionConstraint := ">=0.0.0"
 	if v, ok, err := params.Get(starlark.String("version")); ok && err == nil {
@@ -81,7 +84,7 @@ var Builder = func(params *starlark.Dict) (starlark.Value, error) {
 	if !ok {
 		return nil, fmt.Errorf("Helm version %s does not match constraint %s!", version, versionConstraint)
 	}
-	mod.SetKeyFunc(starlark.String("template"), template)
-	mod.SetKeyFunc(starlark.String("dep_build"), depBuild)
+	mod.SetKeyFunc(starlark.String("template"), template(proj))
+	mod.SetKeyFunc(starlark.String("dep_build"), depBuild(proj))
 	return mod, nil
 }

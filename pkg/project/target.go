@@ -20,19 +20,14 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
-)
-
-var (
-	ActiveTarget *Target = nil
 )
 
 type Target struct {
 	Name        string
 	Cmd         *cobra.Command // TODO: maybe private?
 	CheckParams func(*starlark.Dict) error
-	CacheDir    string
 }
 
 func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *starlark.Function) *Target {
@@ -44,19 +39,8 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 		Short: fmt.Sprintf("Executing the '%s'-target. Parameters can be provided by env-variables, a config-file or the commandline-flags below.", target.Name),
 		Long:  ``,
 		RunE: func(_ *cobra.Command, args []string) error {
-			// Make sure project is set as current and setup target as well,
-			// but keep reference to previous target
-			proj.Activate()
-			prev := target.Activate()
-			defer func() {
-				// Deactivate and if there was a previous target, activate it
-				target.Deactivate()
-				if prev != nil {
-					prev.Activate()
-				}
-			}()
 			//
-			params := &module.Module{} // Allows access via dot notation
+			params := &util.DotDict{} // Allows access via dot notation
 			err := target.CheckParams(&params.Dict)
 			if err != nil {
 				return err
@@ -68,14 +52,4 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 		},
 	}
 	return target
-}
-
-func (t *Target) Activate() *Target {
-	prev := ActiveTarget
-	ActiveTarget = t
-	return prev
-}
-
-func (t *Target) Deactivate() {
-	ActiveTarget = nil
 }

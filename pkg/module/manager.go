@@ -19,10 +19,11 @@ package module
 import (
 	"fmt"
 
+	"github.com/trevex/kale/pkg/project"
 	"go.starlark.net/starlark"
 )
 
-type ModuleBuilderFunction func(*starlark.Dict) (starlark.Value, error)
+type ModuleBuilderFunction func(*project.Project, *starlark.Dict) (starlark.Value, error)
 
 type moduleMap map[string]ModuleBuilderFunction
 

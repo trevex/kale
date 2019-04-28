@@ -17,15 +17,8 @@ limitations under the License.
 package util
 
 import (
-	"crypto/sha256"
-	"encoding/binary"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
-
-	"github.com/mr-tron/base58"
 )
 
 func FileExists(name string) bool {
@@ -41,46 +34,4 @@ var dotDirRegex = regexp.MustCompile(`[/\\]\..*`)
 func PathContainsDotDir(path string) bool {
 	match := dotDirRegex.FindString(path)
 	return match != ""
-}
-
-func DirChecksum(dir string) (string, error) {
-	h := sha256.New()
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.Mode().IsRegular() {
-			return nil
-		}
-		if PathContainsDotDir(path) {
-			return nil
-		}
-		h := sha256.New()
-		h.Write([]byte(path))
-		b := make([]byte, 8)
-		binary.LittleEndian.PutUint64(b, uint64(info.ModTime().UnixNano()))
-		h.Write(b)
-		return nil
-	})
-	if err != nil {
-		return "", err
-	}
-	return checksumToString(h.Sum(nil)), nil
-}
-
-func FileChecksum(filepaths ...string) (string, error) {
-	h := sha256.New()
-	for _, f := range filepaths {
-		h.Write([]byte(fmt.Sprintf("%s/n", f)))
-		data, err := ioutil.ReadFile(f)
-		if err != nil {
-			return "", err
-		}
-		h.Write(data)
-	}
-	return checksumToString(h.Sum(nil)), nil
-}
-
-func checksumToString(c []byte) string {
-	return string(base58.Encode(c))
 }

@@ -22,6 +22,7 @@ import (
 	"os/exec"
 
 	"github.com/trevex/kale/pkg/module"
+	"github.com/trevex/kale/pkg/project"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 	"gopkg.in/yaml.v2"
@@ -61,7 +62,7 @@ func apply(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs 
 	return starlark.None, nil
 }
 
-var Builder = func(params *starlark.Dict) (starlark.Value, error) {
+var Builder = func(proj *project.Project, params *starlark.Dict) (starlark.Value, error) {
 	mod := &module.Module{}
 	versionConstraint := ">= 0.0.0"
 	if v, ok, err := params.Get(starlark.String("version")); ok && err == nil {
