@@ -46,6 +46,7 @@ func New(name string, dir string, cmd *cobra.Command) *Project {
 	return &Project{
 		Name:         name,
 		Dir:          dir,
+		CacheDir:     path.Join(dir, ".kale"),
 		Targets:      []*Target{},
 		Dependencies: []*Project{},
 		Cmd:          cmd,
