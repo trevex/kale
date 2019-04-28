@@ -56,8 +56,6 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 				}
 			}()
 			//
-			fmt.Println(target.CacheDir)
-			//
 			params := &module.Module{} // Allows access via dot notation
 			err := target.CheckParams(&params.Dict)
 			if err != nil {

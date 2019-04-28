@@ -19,6 +19,8 @@ package util
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -41,7 +43,7 @@ func PathContainsDotDir(path string) bool {
 	return match != ""
 }
 
-func DirChecksum(dir string) ([]byte, error) {
+func DirChecksum(dir string) (string, error) {
 	h := sha256.New()
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -61,11 +63,24 @@ func DirChecksum(dir string) ([]byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return h.Sum(nil), nil
+	return checksumToString(h.Sum(nil)), nil
 }
 
-func ChecksumToString(c []byte) string {
+func FileChecksum(filepaths ...string) (string, error) {
+	h := sha256.New()
+	for _, f := range filepaths {
+		h.Write([]byte(fmt.Sprintf("%s/n", f)))
+		data, err := ioutil.ReadFile(f)
+		if err != nil {
+			return "", err
+		}
+		h.Write(data)
+	}
+	return checksumToString(h.Sum(nil)), nil
+}
+
+func checksumToString(c []byte) string {
 	return string(base58.Encode(c))
 }

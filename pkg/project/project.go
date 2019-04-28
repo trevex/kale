@@ -61,13 +61,12 @@ func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *st
 		return nil, err
 	}
 	if p.checksum == "" {
-		checksum, err := util.DirChecksum(p.Dir)
+		p.checksum, err = util.DirChecksum(p.Dir)
 		if err != nil {
 			return nil, err
 		}
-		p.checksum = util.ChecksumToString(checksum)
 	}
-	target.CacheDir = path.Join(p.CacheDir, fmt.Sprintf("%s-%s", name, p.checksum))
+	target.CacheDir = path.Join(p.CacheDir, name)
 	// Create parameter checking function
 	p.Targets = append(p.Targets, target)
 	p.Cmd.AddCommand(target.Cmd)

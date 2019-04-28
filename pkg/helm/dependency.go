@@ -22,6 +22,7 @@ import (
 	"path"
 
 	"github.com/trevex/kale/pkg/project"
+	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
 
@@ -35,6 +36,12 @@ func depBuild(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwar
 	if !path.IsAbs(chartDir) {
 		chartDir = path.Join(project.ActiveProject.Dir, chartDir)
 	}
-	fmt.Println(chartDir)
+	fmt.Println(chartDir) // DEBUG
+	requirementsChecksum, err := util.FileChecksum(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock"))
+	if err != nil {
+		return nil, err
+	}
+	cacheDir := path.Join(project.GetCurrentCacheDir(), fmt.Sprintf("dep_build-%s", requirementsChecksum))
+	fmt.Println(cacheDir) // DEBUG
 	return starlark.None, nil
 }
