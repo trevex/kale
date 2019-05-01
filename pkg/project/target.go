@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/trevex/kale/pkg/report"
 	"github.com/trevex/kale/pkg/util"
 	"go.starlark.net/starlark"
 )
@@ -39,6 +40,7 @@ func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *
 		Short: fmt.Sprintf("Executing the '%s'-target. Parameters can be provided by env-variables, a config-file or the commandline-flags below.", target.Name),
 		Long:  ``,
 		RunE: func(_ *cobra.Command, args []string) error {
+			report.Infof("%s %s.%s", report.Style.Bold(report.Style.Green("Running:")), proj.Name, target.Name)
 			//
 			params := &util.DotDict{} // Allows access via dot notation
 			err := target.CheckParams(&params.Dict)

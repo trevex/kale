@@ -39,7 +39,7 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 		if !path.IsAbs(chartDir) {
 			chartDir = path.Join(proj.Dir, chartDir)
 		}
-		fmt.Println(chartDir) // DEBUG
+		// fmt.Println(chartDir) // DEBUG
 		// Calculate checksum of requirements files and current params
 		b := cache.NewChecksumBuilder()
 		b.String(chartDir, fmt.Sprintf("%v", verify))
@@ -47,9 +47,15 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 			return nil, err
 		}
 		s1 := cache.NewStage("helm_dep_build1", b.Build())
-		fmt.Println(s1.Dir)            // DEBUG
-		util.CopyDir(chartDir, s1.Dir) // DEBUG
-		report.SkipStepf("Stage with name '%s' exists, rebuilding of helm dependencies not necessary.", s1.Name)
+		// fmt.Println(s1.Dir) // DEBUG
+		if !s1.Exists() {
+			report.Infof("Copying 'chart_dir' to '%s'...", s1.SubDir())
+			util.CopyDir(chartDir, s1.Dir)
+			report.Infof("Executing 'helm dep build'...")
+
+		} else {
+			report.SkipStepf("Rebuilding of helm dependencies not necessary (%s)", s1.SubDir())
+		}
 		// TODO: check if stage exists already, if so skip
 		// => maybe some standardized logging package necessary? e.g. report module?
 		return starlark.None, nil

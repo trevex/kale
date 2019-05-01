@@ -22,6 +22,10 @@ func SetRootDir(dir string) {
 	segments[0] = dir
 }
 
+func GetRootDir() string {
+	return segments[0]
+}
+
 func Push(subdir string) int {
 	segments = append(segments, subdir)
 	return len(segments)
