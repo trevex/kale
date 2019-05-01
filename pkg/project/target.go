@@ -31,7 +31,7 @@ type Target struct {
 	CheckParams func(*starlark.Dict) error
 }
 
-func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc *starlark.Function) *Target {
+func newTarget(proj *Project, name string, thread *starlark.Thread, targetFunc starlark.Callable) *Target {
 	target := &Target{
 		Name: name,
 	}

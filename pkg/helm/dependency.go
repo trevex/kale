@@ -39,30 +39,44 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 		if !path.IsAbs(chartDir) {
 			chartDir = path.Join(proj.Dir, chartDir)
 		}
-		// fmt.Println(chartDir) // DEBUG
+		// Prepare parameter string for checksums
+		paramsStr := fmt.Sprintf("%s\n%v", chartDir, verify)
+		// Stage 1: build the helm dependencies
 		// Calculate checksum of requirements files and current params
-		b := cache.NewChecksumBuilder()
-		b.String(chartDir, fmt.Sprintf("%v", verify))
-		if err := b.File(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock")); err != nil {
+		c1 := cache.NewChecksumBuilder()
+		c1.String(paramsStr)
+		if err := c1.File(path.Join(chartDir, "requirements.yaml"), path.Join(chartDir, "requirements.lock")); err != nil {
 			return nil, err
 		}
-		s1 := cache.NewStage("helm_dep_build1", b.Build())
-		// fmt.Println(s1.Dir) // DEBUG
+		s1 := cache.NewStage("helm_dep_build1", c1.Build())
 		if !s1.Exists() {
 			report.Infof("Copying 'chart_dir' to '%s'...", s1.SubDir())
 			util.CopyDir(chartDir, s1.Dir)
 			report.Infof("Executing 'helm dep build'...")
 			stdout, stderr, err := util.Exec(&util.ExecOptions{Dir: s1.Dir}, "helm", "dep", "build")
 			if err != nil {
-				report.Errorf("%s", stderr)
+				report.Errorf("%s\n%s", stdout, stderr)
 				return nil, err
 			}
 			report.Infof("%s", stdout)
 		} else {
 			report.SkipStepf("Rebuilding of helm dependencies not necessary, cache exists: %s", s1.SubDir())
 		}
-		// TODO: check if stage exists already, if so skip
-		// => maybe some standardized logging package necessary? e.g. report module?
-		return starlark.None, nil
+		// Stage 2: copy charts dir if something changed (this should save time rebuilding the dependendencies if not necessary)
+		c2 := cache.NewChecksumBuilder()
+		c2.String(paramsStr)
+		if err := c2.Dir(chartDir); err != nil {
+			return nil, err
+		}
+		s2 := cache.NewStage("helm_dep_build2", c2.Build())
+		if !s2.Exists() {
+			report.Infof("Copying 'chart_dir' to '%s'...", s2.SubDir())
+			util.CopyDir(chartDir, s2.Dir)
+		} else {
+			report.SkipStepf("Rebuilding 'chart_dir' not necessary, cache exists: %s", s2.SubDir())
+		}
+		report.Infof("Copying charts from '%s' to '%s'...", s1.SubDir(), s2.SubDir())
+		util.CopyDir(path.Join(s1.Dir, "charts"), path.Join(s2.Dir, "charts"))
+		return starlark.String(s2.Dir), nil
 	}
 }

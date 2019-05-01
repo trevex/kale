@@ -23,8 +23,10 @@ import (
 
 func RegisterTarget(proj *project.Project) starlark.Value {
 	return starlark.NewBuiltin("target", func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var err error
-		targetFunc := &starlark.Function{}
+		var (
+			err        error
+			targetFunc starlark.Callable
+		)
 		paramsSchema := starlark.NewDict(16)
 		if err = starlark.UnpackArgs("target", args, kwargs, "func", &targetFunc, "params?", &paramsSchema); err != nil {
 			return nil, err

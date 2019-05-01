@@ -93,6 +93,11 @@ func ConstructParameterCheck(flags *pflag.FlagSet, paramsSchema *starlark.Dict) 
 			paramFunc = func() (starlark.Value, starlark.Value, error) {
 				return starlark.String(key), starlark.Float(f), nil
 			}
+		case "input":
+			paramFunc = func() (starlark.Value, starlark.Value, error) {
+				// TODO: run target func!
+				return starlark.String(key), starlark.String("Hello"), nil
+			}
 		default:
 			return nil, fmt.Errorf("Type %s not implemented as target parameter", obj.Type)
 		}

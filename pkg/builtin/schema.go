@@ -29,6 +29,7 @@ func SchemaModule() starlark.Value {
 	mod.SetKeyFunc(starlark.String("bool"), primitiveSchemaObjectFunc("bool", schema.DefaultBool))
 	mod.SetKeyFunc(starlark.String("int"), primitiveSchemaObjectFunc("int", schema.DefaultInt))
 	mod.SetKeyFunc(starlark.String("float"), primitiveSchemaObjectFunc("float", schema.DefaultFloat))
+	mod.SetKeyFunc(starlark.String("input"), inputSchemaObjectFunc)
 	return mod
 }
 
@@ -41,6 +42,17 @@ func primitiveSchemaObjectFunc(name string, defaultValue interface{}) func(_ *st
 		}
 		return obj.ToDict()
 	}
+}
+
+func inputSchemaObjectFunc(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	obj := schema.New("input", nil)
+	var targetFunc starlark.Callable
+	if err := starlark.UnpackArgs(obj.Type, args, kwargs, "target", &targetFunc); err != nil {
+		return nil, err
+	}
+	obj.Required = true
+	obj.Target = targetFunc.Name()
+	return obj.ToDict()
 }
 
 // func schemaList(_ *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {

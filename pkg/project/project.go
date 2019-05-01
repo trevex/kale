@@ -47,7 +47,7 @@ func New(name string, dir string, cmd *cobra.Command) *Project {
 	}
 }
 
-func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc *starlark.Function, paramsSchema *starlark.Dict) (*Target, error) {
+func (p *Project) AddTarget(name string, thread *starlark.Thread, targetFunc starlark.Callable, paramsSchema *starlark.Dict) (*Target, error) {
 	var err error
 	target := newTarget(p, name, thread, targetFunc)
 	target.CheckParams, err = schema.ConstructParameterCheck(target.Cmd.Flags(), paramsSchema)

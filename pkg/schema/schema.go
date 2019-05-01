@@ -18,6 +18,7 @@ type SchemaObject struct {
 	Type     string
 	Required bool
 	Default  interface{}
+	Target   string
 }
 
 func New(name string, defaultValue interface{}) *SchemaObject {
@@ -25,6 +26,7 @@ func New(name string, defaultValue interface{}) *SchemaObject {
 		Type:     name,
 		Required: false,
 		Default:  defaultValue,
+		Target:   "",
 	}
 }
 
@@ -71,6 +73,17 @@ func FromDict(dict *starlark.Dict) (*SchemaObject, error) {
 			return nil, err
 		}
 	}
+	// target
+	v, ok, err = dict.Get(starlark.String("target"))
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		obj.Target, ok = starlark.AsString(v)
+		if !ok {
+			return nil, fmt.Errorf("Field 'target' not a string! Not a schema-object?")
+		}
+	}
 	return obj, nil
 }
 
@@ -84,6 +97,9 @@ func (obj *SchemaObject) ToDict() (starlark.Value, error) {
 			return nil, err
 		}
 		dict.SetKey(starlark.String("default"), v)
+	}
+	if obj.Target != "" {
+		dict.SetKey(starlark.String("target"), starlark.String(obj.Target))
 	}
 	return dict, nil
 }
@@ -105,6 +121,8 @@ func getDefaultValue(name string) (interface{}, error) {
 		return DefaultFloat, nil
 	case "int":
 		return DefaultInt, nil
+	case "input":
+		return nil, nil
 	default:
 		return "", fmt.Errorf("Unknown type: %s", name)
 	}

@@ -8,8 +8,8 @@ var.extend({ # adds additional global variables
 })
 
 def prepare(params):
-    chart_with_deps = helm.dep_build(chart_dir="./chart")
-    output(chart_with_deps) # TODO: or just return?
+    return helm.dep_build(chart_dir="./chart")
+    # output(chart_with_deps) # TODO: or just return?
     # TODO: output needs to be "Outputable"
     #       1. Create Outputable-interface
     #       2. All types should implement interface and we can check this
@@ -26,8 +26,9 @@ target(prepare)
 
 target(build, params = {
     "values": schema.filename(required = True),
-    "version": schema.string(default = "0.9.0"),
-    "b": schema.bool(default = True),
-    "f": schema.float(default = 1.0),
-    "i": schema.int(default = 2)
+    "chart_dir": schema.input(prepare) # TODO: custom callable for dependencies!
+    # "version": schema.string(default = "0.9.0"),
+    # "b": schema.bool(default = True),
+    # "f": schema.float(default = 1.0),
+    # "i": schema.int(default = 2),
 })
