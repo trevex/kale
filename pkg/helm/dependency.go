@@ -52,9 +52,14 @@ func depBuild(proj *project.Project) util.StarlarkFunction {
 			report.Infof("Copying 'chart_dir' to '%s'...", s1.SubDir())
 			util.CopyDir(chartDir, s1.Dir)
 			report.Infof("Executing 'helm dep build'...")
-
+			stdout, stderr, err := util.Exec(&util.ExecOptions{Dir: s1.Dir}, "helm", "dep", "build")
+			if err != nil {
+				report.Errorf("%s", stderr)
+				return nil, err
+			}
+			report.Infof("%s", stdout)
 		} else {
-			report.SkipStepf("Rebuilding of helm dependencies not necessary (%s)", s1.SubDir())
+			report.SkipStepf("Rebuilding of helm dependencies not necessary, cache exists: %s", s1.SubDir())
 		}
 		// TODO: check if stage exists already, if so skip
 		// => maybe some standardized logging package necessary? e.g. report module?
