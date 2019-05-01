@@ -76,8 +76,6 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 		"target":  builtin.RegisterTarget(proj),
 		"project": builtin.NameProject(proj),
 		"var":     builtin.VarModule(proj),
-		"input":   builtin.Input(proj),
-		"output":  builtin.Output(proj),
 	})
 	// Start REPL if no target was supplied
 	cmd.RunE = func(_ *cobra.Command, args []string) error {
