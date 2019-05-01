@@ -46,7 +46,7 @@ func Run(stdout io.Writer, args []string) (*cobra.Command, error) {
 	cmd.SetOutput(stdout)
 	cmd.SetArgs(args)
 	//
-	report.SetOutput(stdout)
+	report.SetOutput(stdout, true)
 	// Persistent flags
 	flags := cmd.PersistentFlags()
 	kalefile := ""
